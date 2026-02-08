@@ -1,0 +1,5 @@
+Algorithm,Reward Function,Mean Reward (shaped),Std Reward (shaped),Success Rate (default),Mean Length (default),Training Time (s)
+PPO,default,8.09,2.55,100.0%,13.0,107.6
+PPO,distance_based,8.66,2.36,100.0%,12.9,193.3
+PPO,modified_penalty,14.02,1.27,100.0%,13.2,108.1
+PPO,enhanced,-7.84,68.48,91.0%,30.0,123.6

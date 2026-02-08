@@ -1,0 +1,8 @@
+PPO Training Summary
+==================================================
+
+Total Timesteps: 200000
+Training Time: 138.25 seconds
+
+Final Average Reward (last 100 episodes): -192.56
+Final Success Rate: 1.00%

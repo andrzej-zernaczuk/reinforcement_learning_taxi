@@ -1,1 +1,251 @@
-# reinforcement_learning_taxi
+# Taxi-v3 Reinforcement Learning Project
+
+Implementation and comparison of **PPO (Proximal Policy Optimization)** and **Deep Q-Network (DQN)** algorithms for solving the Gymnasium Taxi-v3 environment.
+
+## Project Overview
+
+This project implements two reinforcement learning algorithms to solve the classic Taxi problem:
+- **PPO**: A policy-based RL algorithm that uses actor-critic architecture with clipped surrogate objective
+- **DQN**: A value-based deep learning approach that uses neural networks to approximate the Q-function
+
+### Features
+- **Per-reward hyperparameter tuning**: Avoids bias from default-reward hyperparameters
+- **Baseline narrative preserved**: Early notebooks show naive baselines before tuning
+- **Reproducible workflow**: Run notebooks in sequence, outputs auto-generated
+- **Full artifacts**: Configs, logs, and render videos saved under `results/`
+
+### The Taxi-v3 Environment
+
+The Taxi problem is a grid-world navigation task where an agent must:
+1. Navigate a 5x5 grid
+2. Pick up a passenger from one of 4 locations (R, G, Y, B)
+3. Drop off the passenger at their destination
+4. Minimize the number of steps taken
+
+**Specifications:**
+- **State Space**: Discrete(500) - 25 positions 5 passenger locations 4 destinations
+- **Action Space**: Discrete(6) - South, North, East, West, Pickup, Dropoff
+- **Rewards**: -1 per step, +20 for successful delivery, -10 for illegal actions
+
+## Project Structure
+
+```
+├── notebooks/ # Jupyter notebooks
+│ ├── 01_taxi_environment_exploration.ipynb # Environment understanding
+│ ├── 02_ppo_training.ipynb # PPO baseline
+│ ├── 03_dqn_training.ipynb # DQN baseline
+│ ├── 04_ppo_tuning_per_reward.ipynb
+│ ├── 05_dqn_tuning_per_reward.ipynb
+│ └── 06_reward_comparison_tuned.ipynb # PPO vs DQN comparison (per-reward tuned)
+├── results/ # Training results
+│ ├── hyperparameter_tuning/ # Per-reward tuning outputs
+│ │ ├── ppo_per_reward/ # Best PPO configs + CSVs
+│ │ └── dqn_per_reward/ # Best DQN configs + CSVs
+│ ├── logs/ # Training logs (baseline and tuning)
+│ ├── renders/ # MP4 episode rollouts
+│ └── reward_comparison_tuned/ # Generated comparison tables/plots
+├── src/ # Source code
+| └── reinforcement_learning_taxi/
+│ ├── agents/ # Agent implementations
+│ │ ├── ppo_agent.py # PPO agent wrapper
+│ │ └── dqn_agent.py # DQN agent wrapper
+| ├── configs/ # Configuration files
+| │ ├── ppo_config_baseline.yaml # PPO baseline hyperparameters
+| │ ├── dqn_config_baseline.yaml # DQN baseline hyperparameters
+│ ├── training/ # Training modules
+│ │ ├── ppo_trainer.py # PPO trainer
+│ │ └── dqn_trainer.py # DQN trainer
+│ ├── evaluation/ # Evaluation metrics
+│ │ └── metrics.py # Performance evaluation functions
+│ └── visualization/ # Visualization utilities
+│ ├── training_plots.py # Training progress plots
+│ └── comparison_plots.py # Algorithm comparison plots
+├── pyproject.toml # Project configuration and dependencies
+├── .python-version # Python version for UV
+└── README.md # This file
+```
+
+## Installation
+
+### Prerequisites
+- Python 3.10 or higher
+- [UV](https://github.com/astral-sh/uv) - Fast Python package installer
+
+### Setup
+
+1. Clone the repository:
+2. Run `uv sync`
+
+This automatically creates the virtual environment and installs all dependencies.
+
+## Usage
+
+### Complete Workflow
+
+The project follows a **per-reward tuning workflow** to avoid bias from default-reward hyperparameters:
+
+#### Phase 1: Baseline Training
+```bash
+# 1. Environment exploration
+uv run jupyter notebook notebooks/01_taxi_environment_exploration.ipynb
+
+# 2. Train PPO (baseline hyperparameters)
+uv run jupyter notebook notebooks/02_ppo_training.ipynb
+
+# 3. Train DQN (baseline hyperparameters)
+uv run jupyter notebook notebooks/03_dqn_training.ipynb
+```
+
+#### Phase 2: Per-Reward Tuning
+```bash
+# 4. Tune PPO per reward function
+uv run jupyter notebook notebooks/04_ppo_tuning_per_reward.ipynb
+
+# 5. Tune DQN per reward function
+uv run jupyter notebook notebooks/10_dqn_tuning_per_reward.ipynb
+```
+
+#### Phase 3: Tuned Comparison
+```bash
+# 6. Compare PPO vs DQN using per-reward tuned configs
+uv run jupyter notebook notebooks/06_reward_comparison_tuned.ipynb
+```
+
+### Configuration
+
+Hyperparameters are organized in baseline configurations and per-reward tuned outputs:
+
+**PPO Baseline** (`configs/ppo_config_baseline.yaml`):
+```yaml
+agent:
+ learning_rate: 0.0003
+ n_steps: 1024
+ batch_size: 64
+ n_epochs: 10
+ gamma: 0.99
+ gae_lambda: 0.95
+ clip_range: 0.2
+ policy_kwargs:
+  net_arch: [256, 256]
+
+training:
+ total_timesteps: 200000
+```
+
+**DQN Baseline** (`configs/dqn_config_baseline.yaml`):
+```yaml
+agent:
+ learning_rate: 0.0001
+ buffer_size: 100000
+ batch_size: 64
+ gamma: 0.99
+ target_update_interval: 1000
+ exploration_fraction: 0.3
+ exploration_final_eps: 0.01
+ policy_kwargs:
+ net_arch: [256, 256]
+
+training:
+ total_timesteps: 200000
+```
+See the full config files for the complete parameter list.
+
+**Per-reward tuned configs** are generated by:
+- `notebooks/04_ppo_tuning_per_reward.ipynb`
+- `notebooks/05_dqn_tuning_per_reward.ipynb`
+
+Best parameters are saved to:
+- `results/hyperparameter_tuning/ppo_per_reward/ppo_<reward>_best.yaml`
+- `results/hyperparameter_tuning/dqn_per_reward/dqn_<reward>_best.yaml`
+
+
+
+## Algorithms
+
+### PPO (Proximal Policy Optimization)
+
+PPO is a policy gradient method that uses a clipped surrogate objective for stable training:
+
+**Key Components:**
+- **Actor-Critic Architecture**: Policy network (actor) and value network (critic)
+- **Clipped Objective**: Prevents large policy updates
+- **GAE (Generalized Advantage Estimation)**: Better advantage estimation
+- **Multiple Epochs**: Reuses collected data for multiple updates
+
+**Objective Function:**
+```
+L(θ) = E[min(r(θ)A, clip(r(θ), 1-ε, 1+ε)A)]
+```
+
+Where:
+- r(θ): Probability ratio between new and old policy
+- A: Advantage function
+- ε: Clipping parameter (typically 0.2)
+
+**Advantages:**
+- Very stable training
+- Sample efficient
+- Easy to tune
+- Works with both discrete and continuous actions
+
+### Deep Q-Network (DQN)
+
+DQN uses a neural network to approximate the Q-function, enabling learning in larger state spaces:
+
+**Key Features:**
+- Experience replay buffer for decorrelated training samples
+- Target network for stable learning
+- Neural network function approximation
+- Gradient-based optimization
+
+**Implementation:** Uses [stable-baselines3](https://stable-baselines3.readthedocs.io/) library
+
+## Visualization
+
+The project generates visualizations:
+
+- **Learning curves**: Reward and episode length over training
+- **Success rate**: Evaluation success across checkpoints
+- **Exploration behavior**: DQN epsilon schedule effects
+- **Comparison plots**: PPO vs DQN per reward function
+- **Render videos**: MP4 rollouts for qualitative inspection
+
+Artifacts are saved under `results/`, with videos in `results/renders/`.
+
+## Reward Functions
+
+The project implements 4 different reward shaping strategies:
+
+1. **Default**: Original Taxi-v3 rewards (-1 per step, +20 delivery, -10 illegal)
+2. **Distance-Based**: Adds ±0.1 rewards for moving closer/away from target
+3. **Modified Penalty**: Reduces step penalty from -1 to -0.5
+4. **Enhanced**: Combines distance shaping with pickup bonuses (+25 delivery, -5 illegal, +2 pickup)
+Reward wrappers live in `src/reinforcement_learning_taxi/environments/reward_wrappers.py`.
+See `notebooks/06_reward_comparison_tuned.ipynb` for detailed analysis and results.
+
+## Hyperparameter Tuning
+
+Systematic hyperparameter tuning is performed using random search per reward function:
+
+**PPO Parameters:**
+- Learning rate: [1e-4, 3e-4, 5e-4, 1e-3]
+- N steps: [512, 1024, 2048]
+- Batch size: [32, 64, 128]
+- Clip range: [0.1, 0.2, 0.3]
+- Entropy coefficient: [0.0, 0.01, 0.05]
+
+**DQN Parameters:**
+- Learning rate: [5e-5, 1e-4, 2e-4, 5e-4]
+- Batch size: [32, 64, 128]
+- Buffer size: [50000, 100000, 200000]
+- Gamma: [0.95, 0.99, 0.999]
+- Target update interval: [500, 1000, 2000]
+- Exploration fraction: [0.4, 0.6, 0.8, 0.9]
+- Final epsilon: [0.05, 0.1, 0.2, 0.3]
+- Learning starts: [5000, 10000, 20000]
+- Train frequency: [1, 4]
+- Gradient steps: [1, 4]
+
+See:
+- `notebooks/04_ppo_tuning_per_reward.ipynb` (PPO per-reward tuning)
+- `notebooks/05_dqn_tuning_per_reward.ipynb` (DQN per-reward tuning)

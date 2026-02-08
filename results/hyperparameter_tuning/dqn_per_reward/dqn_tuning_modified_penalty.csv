@@ -1,0 +1,6 @@
+config_id,reward_name,learning_rate,batch_size,buffer_size,gamma,target_update_interval,exploration_fraction,exploration_final_eps,learning_starts,train_freq,gradient_steps,mean_reward_shaped,std_reward_shaped,success_rate_default,mean_length_default,training_time
+5,modified_penalty,0.0002,128,50000,0.95,2000,0.8,0.1,10000,1,1,14.215,1.2985665173567351,1.0,13.39,269.9371609687805
+2,modified_penalty,0.0002,128,50000,0.95,2000,0.9,0.1,20000,4,4,14.13,1.1887388274974449,1.0,13.15,252.8802649974823
+1,modified_penalty,0.0002,32,100000,0.999,2000,0.9,0.3,10000,1,1,14.11,1.291472028345949,1.0,13.06,256.11571884155273
+4,modified_penalty,0.0001,128,50000,0.95,500,0.8,0.1,20000,1,4,13.985,1.384656997237944,1.0,13.37,924.2464110851288
+3,modified_penalty,0.0001,32,50000,0.999,1000,0.9,0.2,20000,4,1,-110.955,192.10590952649014,0.09,183.2,86.92888116836548

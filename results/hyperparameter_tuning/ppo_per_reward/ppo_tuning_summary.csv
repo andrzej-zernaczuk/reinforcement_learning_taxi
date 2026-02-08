@@ -1,0 +1,5 @@
+reward_name,best_config_id,best_mean_reward_shaped,best_success_rate_default
+default,17,7.93,1.0
+distance_based,14,8.856,1.0
+modified_penalty,16,14.08,1.0
+enhanced,15,5.044,0.89

@@ -1,0 +1,8 @@
+DQN Training Summary
+==================================================
+
+Total Timesteps: 500000
+Training Time: 577.94 seconds
+
+Final Average Reward (last 100 episodes): -11.98
+Final Success Rate: 21.00%
